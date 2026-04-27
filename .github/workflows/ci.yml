@@ -66,7 +66,7 @@ jobs:
 
       - name: Tooling unit tests
         run: |
-          pip install -e ./tools
+          pip install -e "./tools[dev]"
           python -m pytest tools/tests -q
 
       - name: Stop API
