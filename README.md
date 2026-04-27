@@ -2,7 +2,7 @@
 
 ## Short description
 
-An **experimental, educational** sandbox for **healthcare claims analytics API automation**: synthetic members, providers, encounters, and 837-like JSON flow through a **deterministic Node/Express** API with a **nine-rule fraud / abuse / waste (FWA)** engine. **[Karate](https://github.com/karatelabs/karate)** drives REST contract tests end-to-end; a small **Python CLI** (Setup Doctor, Failure Analyzer, Karate Scaffold Generator) supports setup checks, **controlled failure-analysis** workflows, fix proposals, and test scaffolding—without replacing business logic or adjudication.
+An **experimental** sandbox—an **enterprise-ready solution** for **healthcare claims analytics API automation**: synthetic members, providers, encounters, and 837-like JSON flow through a **deterministic Node/Express** API with a **nine-rule fraud / abuse / waste (FWA)** engine. **[Karate](https://github.com/karatelabs/karate)** drives REST contract tests end-to-end; a small **Python CLI** (Setup Doctor, Failure Analyzer, Karate Scaffold Generator) supports setup checks, **controlled failure-analysis** workflows, fix proposals, and test scaffolding—without replacing business logic or adjudication.
 
 This repository is useful for **learning**, **experimentation**, **framework design**, and **QA/SDET automation** patterns. It is **not** a production claims system.
 
@@ -206,4 +206,4 @@ On push/PR to `main` or `master`, [`.github/workflows/ci.yml`](.github/workflows
 
 ## License
 
-Educational and experimental sandbox project. Use for learning and experimentation at your own discretion; there is no warranty.
+**Enterprise-ready solution** (experimental sandbox). Use at your own discretion; there is no warranty.
