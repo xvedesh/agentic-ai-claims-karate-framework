@@ -1,0 +1,11 @@
+{
+  "_comment": "Synthetic NCCI-style bundle table. If a claim bills any TWO components from the same bundle on the same DOS for the same member+provider, the unbundling rule (Phase 3) flags it as ABUSE_UNBUNDLING.",
+
+  "bundles": [
+    {
+      "parentCode": "PROC-PROC-LAP-COMBO",
+      "components": ["PROC-PROC-LAP-A", "PROC-PROC-LAP-B"],
+      "rationale": "Components A and B form a single combined procedure when performed together."
+    }
+  ]
+}

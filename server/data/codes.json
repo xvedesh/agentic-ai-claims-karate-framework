@@ -1,0 +1,85 @@
+{
+  "_comment": "Synthetic code registry. NOT real CPT/ICD-10. All codes prefixed PROC-/DX- to make the synthetic nature obvious. Used by validators and the Phase-3 rules engine.",
+
+  "procedures": [
+    {
+      "code": "PROC-OFFICE-VISIT-1",
+      "category": "EM",
+      "complexityTier": 1,
+      "description": "Synthetic E/M visit, low complexity",
+      "allowedSpecialties": ["GENERAL", "CARDIOLOGY"]
+    },
+    {
+      "code": "PROC-OFFICE-VISIT-3",
+      "category": "EM",
+      "complexityTier": 3,
+      "description": "Synthetic E/M visit, high complexity",
+      "allowedSpecialties": ["GENERAL", "CARDIOLOGY"],
+      "supportingDiagnoses": [
+        "DX-DIAB-T2",
+        "DX-HYPERTENSION",
+        "DX-HEADACHE-CHRONIC",
+        "DX-SEIZURE"
+      ]
+    },
+    {
+      "code": "PROC-LAB-CBC",
+      "category": "LAB",
+      "complexityTier": 1,
+      "description": "Synthetic complete-blood-count placeholder",
+      "allowedSpecialties": ["GENERAL", "LAB"]
+    },
+    {
+      "code": "PROC-LAB-A1C",
+      "category": "LAB",
+      "complexityTier": 1,
+      "description": "Synthetic glycated-hemoglobin placeholder",
+      "allowedSpecialties": ["GENERAL", "LAB"],
+      "supportingDiagnoses": ["DX-DIAB-T2"]
+    },
+    {
+      "code": "PROC-IMG-MRI-BRAIN",
+      "category": "IMG",
+      "complexityTier": 4,
+      "description": "Synthetic brain-MRI placeholder",
+      "allowedSpecialties": ["RADIOLOGY", "NEUROLOGY"],
+      "supportingDiagnoses": ["DX-HEADACHE-CHRONIC", "DX-SEIZURE"]
+    },
+    {
+      "code": "PROC-PROC-LAP-A",
+      "category": "PROC",
+      "complexityTier": 3,
+      "description": "Synthetic laparoscopic component A (bundles with B)",
+      "allowedSpecialties": ["SURGERY"]
+    },
+    {
+      "code": "PROC-PROC-LAP-B",
+      "category": "PROC",
+      "complexityTier": 3,
+      "description": "Synthetic laparoscopic component B (bundles with A)",
+      "allowedSpecialties": ["SURGERY"]
+    },
+    {
+      "code": "PROC-PROC-LAP-COMBO",
+      "category": "PROC",
+      "complexityTier": 3,
+      "description": "Synthetic combined laparoscopic procedure (parent of A+B)",
+      "allowedSpecialties": ["SURGERY"]
+    }
+  ],
+
+  "diagnoses": [
+    { "code": "DX-CHECKUP", "description": "Synthetic routine checkup placeholder" },
+    { "code": "DX-DIAB-T2", "description": "Synthetic Type-2 diabetes placeholder" },
+    { "code": "DX-HEADACHE-CHRONIC", "description": "Synthetic chronic headache placeholder" },
+    { "code": "DX-SEIZURE", "description": "Synthetic seizure-disorder placeholder" },
+    { "code": "DX-HYPERTENSION", "description": "Synthetic hypertension placeholder" }
+  ],
+
+  "specialties": ["GENERAL", "CARDIOLOGY", "RADIOLOGY", "NEUROLOGY", "LAB", "SURGERY"],
+
+  "modifiers": [
+    { "code": "MOD-50", "description": "Synthetic bilateral-procedure modifier (guardrail signal)" },
+    { "code": "MOD-59", "description": "Synthetic distinct-procedural-service modifier" }
+  ]
+}

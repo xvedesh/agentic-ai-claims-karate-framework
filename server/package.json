@@ -1,0 +1,19 @@
+{
+  "name": "claims-analytics-sandbox-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Layer A - deterministic Node service for the Healthcare Claims Analytics Sandbox.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

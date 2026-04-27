@@ -1,0 +1,35 @@
+# One-shot stack for the Layer A API (interview / CI smoke).
+#
+# From repo root:
+#   docker compose up -d --build
+#   ./mvnw test   # or scripts/verify.ps1 / scripts/verify.sh
+#   docker compose down
+#
+# Karate on the host uses http://localhost:3000 (published port).
+# Inside a future test container, use BASE_URL=http://claims-server:3000
+# and karate.env=docker (see src/test/resources/karate-config.js).
+
+services:
+  claims-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    image: claims-analytics-sandbox-server:local
+    container_name: claims-sandbox-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('http').get('http://127.0.0.1:3000/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 8s

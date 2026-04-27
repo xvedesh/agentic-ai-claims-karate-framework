@@ -1,0 +1,77 @@
+# Lightweight CI: start Layer A on localhost, run Karate + Python tooling tests.
+# No Karate-in-Docker — keeps the pipeline simple and matches interview flow.
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install API dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Start API (background)
+        working-directory: server
+        run: |
+          nohup node index.js > /tmp/claims-api.log 2>&1 &
+          echo $! > /tmp/claims-api.pid
+          sleep 2
+
+      - name: Wait for /health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf --max-time 3 http://localhost:3000/health; then
+              echo "API healthy"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "--- API log ---"
+          cat /tmp/claims-api.log || true
+          exit 1
+
+      - name: Run Karate suite
+        run: chmod +x mvnw && ./mvnw test -B
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tooling unit tests
+        run: |
+          pip install -e ./tools
+          python -m pytest tools/tests -q
+
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f /tmp/claims-api.pid ]; then
+            kill "$(cat /tmp/claims-api.pid)" 2>/dev/null || true
+          fi

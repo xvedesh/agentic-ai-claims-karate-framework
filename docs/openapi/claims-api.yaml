@@ -1,0 +1,727 @@
+openapi: 3.1.0
+info:
+  title: Healthcare Claims Analytics Sandbox API
+  version: 0.4.0
+  summary: Synthetic 837-like claim submission and 835-like adjudication.
+  description: |
+    Lightweight payment-integrity sandbox. **Synthetic data only.** No PHI.
+
+    The API surface is fully exercised by the Phase-4 Karate suite under
+    `src/test/resources/features/` (26/26 green on the default profile)
+    and is now the contract source of truth that the Karate Scaffold
+    Generator (`python -m tools.cli scaffold from-openapi`) reads.
+
+    Layered surface:
+      - meta + CRUD: members, providers, encounters, draft claims.
+      - submission pipeline: simplified Ack999 + 835-like adjudication.
+      - rules engine: 9 fraud / abuse / waste rules drive the
+        adjudicator's terminal status via the deterministic
+        action > severity > category priority model.
+      - in-memory pipeline event log with a per-submission TRN
+        correlation id shared by the claim, the adjudication, and
+        every emitted event.
+      - sandbox-only admin reset.
+
+servers:
+  - url: http://localhost:3000
+    description: Local Node service (default)
+  - url: http://claims-server:3000
+    description: Docker compose network
+
+tags:
+  - { name: meta,        description: Health and authentication }
+  - { name: members,     description: Synthetic patient/member resources }
+  - { name: providers,   description: Synthetic provider resources }
+  - { name: encounters,  description: Synthetic service events }
+  - { name: claims,      description: 837-like draft claim resources + submission pipeline }
+  - { name: alerts,      description: Fraud / abuse / waste alerts produced by the rules engine }
+  - { name: pipeline,    description: In-memory pipeline event log (TRN-correlated) }
+  - { name: admin,       description: Sandbox-only admin (reset to seed data) }
+
+paths:
+  /health:
+    get:
+      tags: [meta]
+      summary: Liveness probe.
+      security: []
+      responses:
+        "200":
+          description: Service is up.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Health" }
+
+  /auth/login:
+    post:
+      tags: [meta]
+      summary: Issue a JWT for sandbox access.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200":
+          description: Token issued.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LoginResponse" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/members:
+    get:
+      tags: [members]
+      summary: List members.
+      responses:
+        "200":
+          description: Member list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Member" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [members]
+      summary: Create a synthetic member.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MemberInput" }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Member" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/members/{id}:
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    get:
+      tags: [members]
+      summary: Get a member by id.
+      responses:
+        "200":
+          description: Member.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Member" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/providers:
+    get:
+      tags: [providers]
+      summary: List providers.
+      responses:
+        "200":
+          description: Provider list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Provider" }
+    post:
+      tags: [providers]
+      summary: Create a synthetic provider.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProviderInput" }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Provider" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/providers/{id}:
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    get:
+      tags: [providers]
+      summary: Get a provider by id.
+      responses:
+        "200":
+          description: Provider.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Provider" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/encounters:
+    get:
+      tags: [encounters]
+      summary: List encounters.
+      responses:
+        "200":
+          description: Encounter list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Encounter" }
+    post:
+      tags: [encounters]
+      summary: Create a synthetic encounter.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EncounterInput" }
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Encounter" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/encounters/{id}:
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    get:
+      tags: [encounters]
+      summary: Get an encounter by id.
+      responses:
+        "200":
+          description: Encounter.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Encounter" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/claims:
+    get:
+      tags: [claims]
+      summary: List claims (all statuses).
+      responses:
+        "200":
+          description: Claim list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Claim" }
+    post:
+      tags: [claims]
+      summary: Create a draft claim (status DRAFT).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClaimInput" }
+      responses:
+        "201":
+          description: Created (status DRAFT).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Claim" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /api/claims/{id}:
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    get:
+      tags: [claims]
+      summary: Get a claim by id.
+      responses:
+        "200":
+          description: Claim.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Claim" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/claims/{id}/submit:
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    post:
+      tags: [claims]
+      summary: Submit a DRAFT claim through the deterministic pipeline.
+      description: |
+        Runs structural validation, the 9-rule fraud/abuse/waste registry,
+        and the synthetic adjudicator in one synchronous call. Emits
+        CLAIM_SUBMITTED, CLAIM_VALIDATED, CLAIM_ADJUDICATED events plus one
+        ALERT_RAISED event per fired rule, all sharing the same TRN
+        correlation id. A non-DRAFT claim returns 409 with the existing
+        adjudicationId so callers can fetch it directly (idempotency
+        guard).
+      responses:
+        "200":
+          description: Submission accepted, claim adjudicated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SubmitResponse" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: Claim already submitted (idempotency guard).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+        "422":
+          description: Submission rejected by the validator (Ack999 errors in details.ack).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  /api/claims/{id}/adjudication:
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    get:
+      tags: [claims]
+      summary: 835-like adjudication response for a submitted claim.
+      responses:
+        "200":
+          description: Adjudication payload.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Adjudication" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404":
+          description: Claim or adjudication not found.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  /api/claims/{id}/alerts:
+    parameters:
+      - $ref: "#/components/parameters/PathId"
+    get:
+      tags: [claims]
+      summary: Alerts raised for a specific claim (empty array if no rule fired).
+      responses:
+        "200":
+          description: Alert list (possibly empty).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Alert" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/alerts:
+    get:
+      tags: [alerts]
+      summary: Query alerts across all claims, optionally filtered.
+      parameters:
+        - in: query
+          name: claimId
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string, enum: [FRAUD, ABUSE, WASTE, SYSTEM] }
+        - in: query
+          name: severity
+          schema: { type: string, enum: [CRITICAL, HIGH, MEDIUM, LOW] }
+        - in: query
+          name: ruleCode
+          schema: { type: string }
+      responses:
+        "200":
+          description: Alert list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Alert" }
+                  filters: { type: object, additionalProperties: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/pipeline/events:
+    get:
+      tags: [pipeline]
+      summary: Read the in-memory pipeline event log.
+      parameters:
+        - in: query
+          name: claimId
+          schema: { type: string }
+        - in: query
+          name: eventType
+          schema:
+            type: string
+            enum: [CLAIM_SUBMITTED, CLAIM_VALIDATED, CLAIM_ADJUDICATED, ALERT_RAISED]
+      responses:
+        "200":
+          description: Event list.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/PipelineEvent" }
+                  filters: { type: object, additionalProperties: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/admin/reset:
+    post:
+      tags: [admin]
+      summary: Reset the in-memory store to the seed data. Sandbox-only.
+      description: |
+        Restores the seeded fixtures (members, providers, encounters,
+        CLM-00050..CLM-00053) and the deterministic `_idCursors`. Karate
+        scenarios call this in their Background to keep cross-claim history
+        from polluting other tests.
+      responses:
+        "200":
+          description: Reset successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, enum: [RESET_OK] }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    PathId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Validation failure.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    Conflict:
+      description: Duplicate id or state conflict.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [UP] }
+        version: { type: string }
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, example: user1 }
+        password: { type: string, example: password1 }
+
+    LoginResponse:
+      type: object
+      required: [accessToken, tokenType]
+      properties:
+        accessToken: { type: string }
+        tokenType:   { type: string, enum: [Bearer] }
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:    { type: string, example: INVALID_REQUEST }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+
+    Member:
+      type: object
+      required: [memberId, firstName, lastName, dateOfBirth, gender, payerId, active]
+      properties:
+        memberId:    { type: string, example: MBR-00001 }
+        firstName:   { type: string }
+        lastName:    { type: string }
+        dateOfBirth: { type: string, format: date }
+        gender:      { type: string, enum: [M, F, X] }
+        payerId:     { type: string, example: PAYER-A }
+        active:      { type: boolean }
+
+    MemberInput:
+      type: object
+      required: [firstName, lastName, dateOfBirth, gender, payerId]
+      properties:
+        memberId:    { type: string, description: Optional. Auto-generated if omitted. }
+        firstName:   { type: string }
+        lastName:    { type: string }
+        dateOfBirth: { type: string, format: date }
+        gender:      { type: string, enum: [M, F, X] }
+        payerId:     { type: string }
+        active:      { type: boolean, default: true }
+
+    Provider:
+      type: object
+      required: [providerId, name, npi, specialty, active]
+      properties:
+        providerId: { type: string, example: PRV-00001 }
+        name:       { type: string }
+        npi:        { type: string, pattern: "^\\d{10}$", description: Synthetic 10-digit identifier. }
+        specialty:  { type: string, enum: [GENERAL, CARDIOLOGY, RADIOLOGY, NEUROLOGY, LAB, SURGERY] }
+        active:     { type: boolean }
+
+    ProviderInput:
+      type: object
+      required: [name, npi, specialty]
+      properties:
+        providerId: { type: string }
+        name:       { type: string }
+        npi:        { type: string, pattern: "^\\d{10}$" }
+        specialty:  { type: string }
+        active:     { type: boolean, default: true }
+
+    Encounter:
+      type: object
+      required: [encounterId, memberId, providerId, serviceDate, diagnosisCodes]
+      properties:
+        encounterId:    { type: string, example: ENC-00001 }
+        memberId:       { type: string }
+        providerId:     { type: string }
+        serviceDate:    { type: string, format: date }
+        diagnosisCodes: { type: array, items: { type: string } }
+        notes:          { type: string }
+
+    EncounterInput:
+      type: object
+      required: [memberId, providerId, serviceDate, diagnosisCodes]
+      properties:
+        encounterId:    { type: string }
+        memberId:       { type: string }
+        providerId:     { type: string }
+        serviceDate:    { type: string, format: date }
+        diagnosisCodes: { type: array, items: { type: string }, minItems: 1 }
+        notes:          { type: string }
+
+    ClaimLine:
+      type: object
+      required: [procedureCode, units, billedAmount]
+      properties:
+        procedureCode: { type: string, example: PROC-OFFICE-VISIT-1 }
+        units:         { type: integer, minimum: 1 }
+        billedAmount:  { type: number, minimum: 0 }
+        modifiers:     { type: array, items: { type: string } }
+
+    ClaimStatus:
+      type: string
+      description: |
+        Claim lifecycle states.
+          DRAFT      - just created, never submitted
+          SUBMITTED  - transient: submission accepted by Ack999 validator
+          VALIDATED  - transient: structural / referential checks passed
+          PAID       - terminal: adjudication accepted, payment computed
+          DENIED     - terminal: rejected by a CRITICAL/HIGH rule
+          ADJUSTED   - terminal: payment reduced by an ADJUST recommendation
+        SUBMITTED and VALIDATED are recorded in `statusHistory` and emitted as
+        events, but they are observed only briefly in the persisted `status`
+        because the pipeline is synchronous. The terminal value is what tests
+        usually assert on.
+      enum: [DRAFT, SUBMITTED, VALIDATED, PAID, DENIED, ADJUSTED]
+
+    StatusTransition:
+      type: object
+      required: [status, at]
+      properties:
+        status: { $ref: "#/components/schemas/ClaimStatus" }
+        at:     { type: string, format: date-time }
+
+    Claim:
+      type: object
+      required: [claimId, memberId, providerId, payerId, serviceDate, lines, status, createdAt]
+      properties:
+        claimId:        { type: string, example: CLM-00101 }
+        memberId:       { type: string }
+        providerId:     { type: string }
+        encounterId:    { type: string, nullable: true }
+        payerId:        { type: string }
+        serviceDate:    { type: string, format: date }
+        lines:          { type: array, items: { $ref: "#/components/schemas/ClaimLine" } }
+        status:         { $ref: "#/components/schemas/ClaimStatus" }
+        statusHistory:
+          type: array
+          items: { $ref: "#/components/schemas/StatusTransition" }
+        createdAt:      { type: string, format: date-time }
+        submittedAt:    { type: string, format: date-time }
+        adjudicatedAt:  { type: string, format: date-time }
+        adjudicationId: { type: string, example: ADJ-00001 }
+        correlationId:  { type: string, example: TRN-00001 }
+
+    ClaimInput:
+      type: object
+      required: [memberId, providerId, payerId, serviceDate, lines]
+      properties:
+        claimId:     { type: string }
+        memberId:    { type: string }
+        providerId:  { type: string }
+        encounterId: { type: string }
+        payerId:     { type: string }
+        serviceDate: { type: string, format: date }
+        lines:       { type: array, items: { $ref: "#/components/schemas/ClaimLine" }, minItems: 1 }
+
+    Ack999Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:    { type: string, example: UNKNOWN_PROCEDURE }
+        message: { type: string }
+        details: { type: object, additionalProperties: true }
+
+    Ack999:
+      type: object
+      description: Simplified 999-like acknowledgment. ACCEPTED means the pipeline ran; REJECTED means the validator stopped at the gate.
+      required: [ackId, claimId, accepted, status, errors]
+      properties:
+        ackId:    { type: string, example: ACK-00001 }
+        claimId:  { type: string }
+        accepted: { type: boolean }
+        status:   { type: string, enum: [ACCEPTED, REJECTED] }
+        errors:
+          type: array
+          items: { $ref: "#/components/schemas/Ack999Error" }
+
+    AdjudicationAdjustment:
+      type: object
+      required: [type, amount, reasonCode]
+      properties:
+        type:        { type: string, enum: [CONTRACTUAL, DENIAL, ADJUSTMENT] }
+        amount:      { type: number }
+        reasonCode:  { type: string, example: CO-45 }
+        explanation: { type: string }
+
+    Adjudication:
+      type: object
+      description: Simplified 835-like payment/advice response. NOT real X12.
+      required:
+        [adjudicationId, claimId, trn, status, billedAmount, allowedAmount, paidAmount,
+         patientResponsibility, winningAction, adjudicatedAt]
+      properties:
+        adjudicationId:        { type: string, example: ADJ-00001 }
+        claimId:               { type: string, example: CLM-00101 }
+        trn:                   { type: string, example: TRN-00001, description: Correlation id shared by every event in this submission. }
+        status:                { type: string, enum: [PAID, DENIED, ADJUSTED] }
+        billedAmount:          { type: number }
+        allowedAmount:         { type: number }
+        paidAmount:            { type: number }
+        patientResponsibility: { type: number }
+        adjustments:
+          type: array
+          items: { $ref: "#/components/schemas/AdjudicationAdjustment" }
+        reasonCodes:
+          type: array
+          items: { type: string }
+        alerts:
+          type: array
+          items: { type: string, description: Alert ids attached to this adjudication. }
+        winningAction:
+          type: string
+          enum: [DENY, ADJUST, MANUAL_REVIEW, APPROVE]
+          description: Highest-priority recommendedAction across all alerts on this claim. APPROVE when no rule fired.
+        adjudicatedAt: { type: string, format: date-time }
+
+    SubmitResponse:
+      type: object
+      required: [ack, claim, adjudication, events]
+      properties:
+        ack:           { $ref: "#/components/schemas/Ack999" }
+        claim:         { $ref: "#/components/schemas/Claim" }
+        adjudication:  { $ref: "#/components/schemas/Adjudication" }
+        events:
+          type: array
+          items: { type: string, description: Event ids emitted during this submission. }
+
+    Alert:
+      type: object
+      description: |
+        Generated by the rules engine when a registered rule fires. Category
+        SYSTEM with ruleCode INTERNAL_RULE_ERROR is a framework-safety alert,
+        NOT a fraud/abuse/waste finding - filter it out when reporting on FWA.
+      required:
+        [alertId, claimId, memberId, providerId, ruleCode, category, severity, recommendedAction, raisedAt]
+      properties:
+        alertId:           { type: string, example: ALT-00001 }
+        claimId:           { type: string, example: CLM-00101 }
+        memberId:          { type: string, example: MBR-00001 }
+        providerId:        { type: string, example: PRV-00001 }
+        ruleCode:
+          type: string
+          description: One of the 9 catalogued FWA rule codes, or INTERNAL_RULE_ERROR.
+          example: FRAUD_DUPLICATE_CLAIM
+        category:          { type: string, enum: [FRAUD, ABUSE, WASTE, SYSTEM] }
+        severity:          { type: string, enum: [CRITICAL, HIGH, MEDIUM, LOW] }
+        explanation:       { type: string }
+        evidence:          { type: object, additionalProperties: true }
+        recommendedAction: { type: string, enum: [DENY, ADJUST, MANUAL_REVIEW, APPROVE] }
+        raisedAt:          { type: string, format: date-time }
+
+    PipelineEvent:
+      type: object
+      required: [eventId, eventType, claimId, correlationId, timestamp]
+      properties:
+        eventId:       { type: string, example: EVT-00001 }
+        eventType:
+          type: string
+          enum: [CLAIM_SUBMITTED, CLAIM_VALIDATED, CLAIM_ADJUDICATED, ALERT_RAISED]
+        claimId:       { type: string }
+        correlationId: { type: string, example: TRN-00001 }
+        timestamp:     { type: string, format: date-time }
+        metadata:      { type: object, additionalProperties: true }
+
+security:
+  - bearerAuth: []

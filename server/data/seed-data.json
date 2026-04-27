@@ -1,0 +1,238 @@
+{
+  "_comment": "Synthetic seed data. NO real PHI. Loaded into the in-memory store at server startup and again whenever POST /api/admin/reset is called.",
+
+  "members": [
+    {
+      "memberId": "MBR-00001",
+      "firstName": "Synthetic",
+      "lastName": "PatientOne",
+      "dateOfBirth": "1980-01-15",
+      "gender": "F",
+      "payerId": "PAYER-A",
+      "active": true
+    },
+    {
+      "memberId": "MBR-00002",
+      "firstName": "Synthetic",
+      "lastName": "PatientTwo",
+      "dateOfBirth": "1955-03-22",
+      "gender": "M",
+      "payerId": "PAYER-A",
+      "active": true
+    },
+    {
+      "memberId": "MBR-00003",
+      "firstName": "Synthetic",
+      "lastName": "PatientThree",
+      "dateOfBirth": "1972-07-09",
+      "gender": "F",
+      "payerId": "PAYER-B",
+      "active": true
+    },
+    {
+      "memberId": "MBR-00010",
+      "firstName": "Synthetic",
+      "lastName": "FraudFixture",
+      "dateOfBirth": "1985-05-05",
+      "gender": "F",
+      "payerId": "PAYER-A",
+      "active": true,
+      "_fixtureNote": "Used by FRAUD_DUPLICATE_CLAIM, FRAUD_INVALID_PROVIDER, FRAUD_PHANTOM_BILLING, ABUSE_UPCODING."
+    },
+    {
+      "memberId": "MBR-00011",
+      "firstName": "Synthetic",
+      "lastName": "AbuseFixture",
+      "dateOfBirth": "1978-08-12",
+      "gender": "M",
+      "payerId": "PAYER-A",
+      "active": true,
+      "_fixtureNote": "Used by ABUSE_EXCESSIVE_FREQUENCY, ABUSE_UNBUNDLING."
+    },
+    {
+      "memberId": "MBR-00012",
+      "firstName": "Synthetic",
+      "lastName": "WasteFixture",
+      "dateOfBirth": "1990-11-30",
+      "gender": "F",
+      "payerId": "PAYER-A",
+      "active": true,
+      "_fixtureNote": "Used by WASTE_DUPLICATE_SERVICE, WASTE_MEDICALLY_UNLIKELY_UNITS, WASTE_UNNECESSARY_PATTERN."
+    }
+  ],
+
+  "providers": [
+    {
+      "providerId": "PRV-00001",
+      "name": "Synthetic Clinic North",
+      "npi": "0000000001",
+      "specialty": "GENERAL",
+      "active": true
+    },
+    {
+      "providerId": "PRV-00002",
+      "name": "Synthetic Imaging Center",
+      "npi": "0000000002",
+      "specialty": "RADIOLOGY",
+      "active": true
+    },
+    {
+      "providerId": "PRV-00003",
+      "name": "Synthetic Surgery Group",
+      "npi": "0000000003",
+      "specialty": "SURGERY",
+      "active": true
+    },
+    {
+      "providerId": "PRV-00099",
+      "name": "Synthetic Inactive Clinic",
+      "npi": "0000000099",
+      "specialty": "GENERAL",
+      "active": false
+    }
+  ],
+
+  "encounters": [
+    {
+      "encounterId": "ENC-00001",
+      "memberId": "MBR-00001",
+      "providerId": "PRV-00001",
+      "serviceDate": "2026-04-10",
+      "diagnosisCodes": ["DX-CHECKUP"],
+      "notes": "Routine synthetic checkup."
+    },
+    {
+      "encounterId": "ENC-00002",
+      "memberId": "MBR-00002",
+      "providerId": "PRV-00001",
+      "serviceDate": "2026-04-12",
+      "diagnosisCodes": ["DX-DIAB-T2"],
+      "notes": "Diabetes follow-up (synthetic)."
+    },
+    {
+      "encounterId": "ENC-00010",
+      "memberId": "MBR-00010",
+      "providerId": "PRV-00001",
+      "serviceDate": "2026-03-01",
+      "diagnosisCodes": ["DX-CHECKUP"],
+      "notes": "Routine checkup. Used to drive ABUSE_UPCODING when paired with PROC-OFFICE-VISIT-3."
+    },
+    {
+      "encounterId": "ENC-00011",
+      "memberId": "MBR-00012",
+      "providerId": "PRV-00002",
+      "serviceDate": "2026-05-01",
+      "diagnosisCodes": ["DX-CHECKUP"],
+      "notes": "Routine checkup. Used to drive WASTE_UNNECESSARY_PATTERN with PROC-IMG-MRI-BRAIN."
+    },
+    {
+      "encounterId": "ENC-00012",
+      "memberId": "MBR-00012",
+      "providerId": "PRV-00002",
+      "serviceDate": "2026-05-15",
+      "diagnosisCodes": ["DX-HEADACHE-CHRONIC"],
+      "notes": "Chronic headache. Guardrail encounter for WASTE_UNNECESSARY_PATTERN (supports MRI)."
+    },
+    {
+      "encounterId": "ENC-00013",
+      "memberId": "MBR-00010",
+      "providerId": "PRV-00001",
+      "serviceDate": "2026-03-10",
+      "diagnosisCodes": ["DX-DIAB-T2"],
+      "notes": "Diabetes follow-up. Guardrail encounter for ABUSE_UPCODING (supports tier-3 visit)."
+    }
+  ],
+
+  "claims": [
+    {
+      "claimId": "CLM-00050",
+      "memberId": "MBR-00010",
+      "providerId": "PRV-00001",
+      "encounterId": "ENC-00010",
+      "payerId": "PAYER-A",
+      "serviceDate": "2026-03-01",
+      "lines": [
+        { "procedureCode": "PROC-OFFICE-VISIT-1", "units": 1, "billedAmount": 100, "modifiers": [] }
+      ],
+      "status": "PAID",
+      "statusHistory": [
+        { "status": "DRAFT", "at": "2026-03-01T08:00:00.000Z" },
+        { "status": "PAID",  "at": "2026-03-01T08:00:01.000Z" }
+      ],
+      "createdAt":     "2026-03-01T08:00:00.000Z",
+      "submittedAt":   "2026-03-01T08:00:01.000Z",
+      "adjudicatedAt": "2026-03-01T08:00:01.000Z",
+      "_fixtureNote": "Baseline 'already-paid' claim. Re-submitting an exact copy triggers FRAUD_DUPLICATE_CLAIM."
+    },
+    {
+      "claimId": "CLM-00051",
+      "memberId": "MBR-00011",
+      "providerId": "PRV-00001",
+      "payerId": "PAYER-A",
+      "serviceDate": "2026-03-15",
+      "lines": [
+        { "procedureCode": "PROC-OFFICE-VISIT-1", "units": 1, "billedAmount": 100, "modifiers": [] }
+      ],
+      "status": "PAID",
+      "statusHistory": [
+        { "status": "DRAFT", "at": "2026-03-15T08:00:00.000Z" },
+        { "status": "PAID",  "at": "2026-03-15T08:00:01.000Z" }
+      ],
+      "createdAt":     "2026-03-15T08:00:00.000Z",
+      "submittedAt":   "2026-03-15T08:00:01.000Z",
+      "adjudicatedAt": "2026-03-15T08:00:01.000Z",
+      "_fixtureNote": "First of two prior office visits for MBR-00011 inside the 7-day frequency window."
+    },
+    {
+      "claimId": "CLM-00052",
+      "memberId": "MBR-00011",
+      "providerId": "PRV-00001",
+      "payerId": "PAYER-A",
+      "serviceDate": "2026-03-17",
+      "lines": [
+        { "procedureCode": "PROC-OFFICE-VISIT-1", "units": 1, "billedAmount": 100, "modifiers": [] }
+      ],
+      "status": "PAID",
+      "statusHistory": [
+        { "status": "DRAFT", "at": "2026-03-17T08:00:00.000Z" },
+        { "status": "PAID",  "at": "2026-03-17T08:00:01.000Z" }
+      ],
+      "createdAt":     "2026-03-17T08:00:00.000Z",
+      "submittedAt":   "2026-03-17T08:00:01.000Z",
+      "adjudicatedAt": "2026-03-17T08:00:01.000Z",
+      "_fixtureNote": "Second prior visit for MBR-00011. A third within 7 days triggers ABUSE_EXCESSIVE_FREQUENCY."
+    },
+    {
+      "claimId": "CLM-00053",
+      "memberId": "MBR-00012",
+      "providerId": "PRV-00001",
+      "payerId": "PAYER-A",
+      "serviceDate": "2026-04-05",
+      "lines": [
+        { "procedureCode": "PROC-LAB-CBC", "units": 1, "billedAmount": 30, "modifiers": [] }
+      ],
+      "status": "PAID",
+      "statusHistory": [
+        { "status": "DRAFT", "at": "2026-04-05T08:00:00.000Z" },
+        { "status": "PAID",  "at": "2026-04-05T08:00:01.000Z" }
+      ],
+      "createdAt":     "2026-04-05T08:00:00.000Z",
+      "submittedAt":   "2026-04-05T08:00:01.000Z",
+      "adjudicatedAt": "2026-04-05T08:00:01.000Z",
+      "_fixtureNote": "Prior CBC for MBR-00012. Another CBC within 30 days triggers WASTE_DUPLICATE_SERVICE."
+    }
+  ],
+
+  "_cursorNote": "Seeded fixture claims occupy CLM-00050..CLM-00053; auto-generated drafts start at CLM-00101 (memberSeq/etc cursors point to 100).",
+  "_idCursors": {
+    "memberSeq": 100,
+    "providerSeq": 100,
+    "encounterSeq": 100,
+    "claimSeq": 100,
+    "ackSeq": 0,
+    "adjudicationSeq": 0,
+    "alertSeq": 0,
+    "eventSeq": 0,
+    "trnSeq": 0
+  }
+}

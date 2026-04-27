@@ -1,0 +1,23 @@
+{
+  "_comment": "Synthetic Medically-Unlikely-Edits limits. Per-DOS maximum unit count for each procedure code. Exceeding the limit triggers WASTE_MEDICALLY_UNLIKELY_UNITS in the Phase-3 rules engine.",
+
+  "limits": {
+    "PROC-OFFICE-VISIT-1": 1,
+    "PROC-OFFICE-VISIT-3": 1,
+    "PROC-LAB-CBC": 4,
+    "PROC-LAB-A1C": 2,
+    "PROC-IMG-MRI-BRAIN": 1,
+    "PROC-PROC-LAP-A": 1,
+    "PROC-PROC-LAP-B": 1,
+    "PROC-PROC-LAP-COMBO": 1
+  },
+
+  "_frequencyWindows": {
+    "comment": "Used by ABUSE_EXCESSIVE_FREQUENCY: max occurrences of a code for the same member within a rolling window (days).",
+    "PROC-OFFICE-VISIT-1": { "windowDays": 7, "maxOccurrences": 2 },
+    "PROC-OFFICE-VISIT-3": { "windowDays": 30, "maxOccurrences": 2 },
+    "PROC-LAB-CBC": { "windowDays": 7, "maxOccurrences": 2 },
+    "PROC-LAB-A1C": { "windowDays": 90, "maxOccurrences": 2 },
+    "PROC-IMG-MRI-BRAIN": { "windowDays": 180, "maxOccurrences": 1 }
+  }
+}
