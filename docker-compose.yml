@@ -1,4 +1,4 @@
-# One-shot stack for the Layer A API (interview / CI smoke).
+# One-shot stack for the Layer A API (local exploration / CI smoke).
 #
 # From repo root:
 #   docker compose up -d --build

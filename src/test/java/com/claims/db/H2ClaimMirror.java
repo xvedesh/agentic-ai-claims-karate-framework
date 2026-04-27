@@ -19,10 +19,10 @@ import java.util.Map;
  * adjudication-summary records the API returned, mirrors them into a SQL
  * table, and runs SQL queries that the Karate scenario can assert on.
  *
- * The interview talking point is: "If our claims service wrote to Postgres,
- * the Karate suite would call into JDBC like this for cross-store
- * assertions." The plumbing (DriverManager + PreparedStatement + SELECT)
- * is identical to what a real downstream-DB assertion would look like.
+ * If a real claims service wrote to Postgres, the Karate suite could call
+ * into JDBC like this for cross-store assertions. The plumbing
+ * (DriverManager + PreparedStatement + SELECT) matches what a downstream-DB
+ * assertion would look like.
  *
  * No connection pool, no schema migration, no ORM - one class so the demo
  * is readable end-to-end.

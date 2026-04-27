@@ -62,7 +62,7 @@ compressed the later phases for checkpoint efficiency:
 | 8 | Karate Scaffold Generator | **Merged into current Phase 5** (`karate_scaffold.py`) |
 | 9 | Docker Compose | **Merged into current Phase 6** (`docker-compose.yml`, `server/Dockerfile`) |
 | 10 | Documentation pass | **Merged into current Phase 6** (README, guides, matrix, architecture) |
-| 11 | Final verification + demo dry-run | **Merged into current Phase 6** (`scripts/verify.*`, `interview-demo-guide.md`, `interview-project-summary.md`, `.github/workflows/ci.yml`) |
+| 11 | Final verification + demo dry-run | **Merged into current Phase 6** (`scripts/verify.*`, `docs/demo-guide.md`, `docs/project-summary.md`, `.github/workflows/ci.yml`) |
 
 Nothing in the original **0–4** technical scope was dropped: Layer A, rules,
 and the Karate MVP are complete. Original **5–8** are all present in one
@@ -80,5 +80,5 @@ The Orchestrator pauses for human approval at:
 - end of Phase 0 (skeleton)
 - end of Phase 4 (Karate suite green on MVP)
 - end of Phase 5 (OpenAPI sync + AI/SDET tooling — covers original 5–8)
-- end of Phase 6 (Docker + interview + CI — covers original 9–11)
+- end of Phase 6 (Docker + packaging + CI — covers original 9–11)
 - optional: formal programme dry-run (recorded session) — on you, not repo-gated

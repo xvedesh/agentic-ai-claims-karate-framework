@@ -271,11 +271,11 @@ Background:
 `com.claims.db.H2ClaimMirror` is a tiny embedded-H2 helper used by
 `features/pipeline/db_assertion.feature`. It mirrors API
 adjudications into a `claim_mirror` table and runs SQL queries that
-Karate asserts on. Talking point for the interview: this is the same
-plumbing we'd use to assert against a real Postgres warehouse if the
+Karate asserts on. Design note: this is the same
+plumbing you would use to assert against a real Postgres warehouse if the
 pipeline persisted there.
 
-## Phase 6 — Docker + interview packaging (delivered)
+## Phase 6 — Docker + packaging (delivered)
 
 - **`server/Dockerfile`** — production-style Node 22 Alpine image; non-root
   user; built-in `HEALTHCHECK` on `/health`.

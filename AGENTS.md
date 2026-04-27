@@ -75,4 +75,4 @@ Hard invariants for Layer B:
 - end of Phase 0 — skeleton (this checkpoint)
 - end of Phase 4 — MVP Karate suite green
 - end of Phase 8 — all 3 SDET tools functional
-- end of Phase 11 — full demo dry-run captured in interview guide
+- end of Phase 11 — full demo dry-run captured in demo guide (`docs/demo-guide.md`)

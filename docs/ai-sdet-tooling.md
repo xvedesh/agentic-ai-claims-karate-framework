@@ -115,7 +115,7 @@ LOCAL_MODEL=llama3.1
 ```
 
 Default `LLM_ENABLED=false`. The demo flow described in
-`docs/interview-demo-guide.md` runs entirely offline.
+`docs/demo-guide.md` runs entirely offline.
 
 ## Repo-level verification (Phase 6)
 
@@ -125,7 +125,7 @@ End-to-end checks (Docker API + full Karate) live next to the repo root:
 - `scripts/verify.sh` (bash; `chmod +x` once)
 
 They are documented in [`README.md`](../README.md) and
-[`interview-demo-guide.md`](./interview-demo-guide.md). They do **not**
+[`demo-guide.md`](./demo-guide.md). They do **not**
 replace `python -m tools.cli doctor`; use both when preparing a laptop
 for a demo.
 

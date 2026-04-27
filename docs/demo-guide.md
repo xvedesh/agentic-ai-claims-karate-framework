@@ -1,13 +1,13 @@
-# Interview Demo Guide (Phase 6 — delivered)
+# Demo guide (Phase 6 — delivered)
 
 > Owner: Documentation Compliance Agent.  
-> One-page facts + numbers: [`interview-project-summary.md`](./interview-project-summary.md).  
+> One-page facts + numbers: [`project-summary.md`](./project-summary.md).  
 > Goal: a **5–10 minute** walkthrough you can narrate without slides, showing
 > a healthcare claims analytics sandbox, Karate API automation, FWA rules,
 > one JDBC assertion, and AI-augmented SDET tooling — **without** implying
 > that an LLM adjudicates claims.
 
-## The 5-minute pitch (memorise this block)
+## The 5-minute overview (memorise this block)
 
 1. **Healthcare claims analytics sandbox** — Synthetic members, providers,
    encounters, and 837-like JSON claims flow through a deterministic Node API.
@@ -29,7 +29,7 @@
    and draft test scaffolding (`scaffold`). **Offline by default**; LLM is
    opt-in and never touches Layer A code paths.
 
-## Prerequisites (30 seconds before you share screen)
+## Prerequisites (before you share screen)
 
 | Need | Why |
 |---|---|
@@ -54,9 +54,9 @@ New terminal at repo root:
 start .\target\karate-reports\karate-summary.html
 ```
 
-## Path B — API in Docker (shows “real” packaging)
+## Path B — API in Docker (packaged stack)
 
-From repo root (Docker Desktop must be running):
+From repo root (Docker must be running):
 
 ```powershell
 docker compose up -d --build
@@ -84,7 +84,7 @@ With the API already running locally:
 SKIP_DOCKER=1 ./scripts/verify.sh
 ```
 
-## 8-step demo flow (Layer B + intentional failures)
+## 8-step walkthrough (Layer B + intentional failures)
 
 Run these **after** the API is healthy (`/health` = 200).
 
@@ -106,7 +106,7 @@ python -m tools.cli scaffold from-rule --rule FRAUD_DUPLICATE_CLAIM
 python -m tools.cli scaffold suggest   # also writes reports/test-generation-plan.md (gitignored)
 ```
 
-## Where to click in the Karate report (talking while you scroll)
+## Where to click in the Karate report (while you scroll)
 
 - **Summary row** — total scenarios, pass/fail, wall time (proves the suite is
   small enough for a PR gate).
@@ -118,7 +118,7 @@ python -m tools.cli scaffold suggest   # also writes reports/test-generation-pla
 - **`@db` feature** — mention `Java.type('com.claims.db.H2ClaimMirror')` as the
   bridge pattern for warehouse validation.
 
-## Talking points (sound bites)
+## Narration anchors (short phrases)
 
 - “Layer A is **fully deterministic** — payment outcomes never depend on an LLM.”
 - “Layer B is the **SDET cockpit**: it reads the same Karate JSON CI already
@@ -130,7 +130,7 @@ python -m tools.cli scaffold suggest   # also writes reports/test-generation-pla
 - “Generated tests land only in `generated/` — **I** promote what is worth
   keeping into `src/test/resources/features/`.”
 
-## If something breaks during the interview
+## If something breaks during a walkthrough
 
 | Symptom | Likely cause | Recovery |
 |---------|--------------|----------|
@@ -144,6 +144,6 @@ python -m tools.cli scaffold suggest   # also writes reports/test-generation-pla
 
 | Minutes | Do |
 |--------:|-----|
-| 5 | Pitch (5 bullets) + `doctor` + `run-smoke` + open `karate-summary.html` on one fraud scenario |
+| 5 | Overview (5 bullets) + `doctor` + `run-smoke` + open `karate-summary.html` on one fraud scenario |
 | 8 | Above + full `mvnw test` + `@demo-failure` + `analyze` + open `ai-failure-analysis.html` |
 | 10 | Above + `propose-fix` + `scaffold from-openapi` + show one file under `generated/features/claims/` |

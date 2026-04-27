@@ -45,6 +45,6 @@ Feature: H2/JDBC assertion - mirror an API adjudication into a SQL table and ass
     # paid_amount comes back as a java.math.BigDecimal; compare via .toString() for portability.
     And match rows[0].paid_amount.toString() == '68.00'
 
-    # 4. Aggregate query (interview talking point: same shape works for KPIs).
+    # 4. Aggregate query (same SQL shape works for KPI-style rollups).
     * def agg = H2.query("SELECT winning_action, COUNT(*) AS n FROM claim_mirror GROUP BY winning_action")
     And match agg contains deep [{ winning_action: 'APPROVE', n: 1 }]

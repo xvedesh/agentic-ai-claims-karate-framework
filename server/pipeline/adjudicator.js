@@ -4,7 +4,7 @@
  * Synthetic 835-like adjudication.
  *
  * NOT a real X12 835. Numbers are deterministic synthetic values designed for
- * interview-readability and easy Karate assertions:
+ * readability in demos and easy Karate assertions:
  *
  *   billedAmount         = sum of line.billedAmount
  *   allowedAmount        = round(billedAmount * 0.85, 2)   // 15% contractual writedown

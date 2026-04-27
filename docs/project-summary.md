@@ -1,9 +1,9 @@
-# Interview project summary (release-ready)
+# Project summary (one page)
 
-One page you can skim **before** a loop or send as a **pre-read** link.
+One page to skim **before** a session or share as a **pre-read** link.
 Synthetic data only; no PHI; not production X12.
 
-## Elevator line (15 seconds)
+## One-line summary (15 seconds)
 
 Deterministic **Node/Express** API simulates claim intake, validation, nine
 **fraud / abuse / waste** rules, and 835-like adjudication. **Karate**
@@ -19,7 +19,7 @@ CLI** helps with setup checks, failure triage, and draft test scaffolding —
 | Rule catalog | `docs/business-rules.md` |
 | Karate features | `src/test/resources/features/` |
 | Aggregate test report | `target/karate-reports/karate-summary.html` (after `mvnw test`) |
-| Demo script (timed) | `docs/interview-demo-guide.md` |
+| Walkthrough (timed) | `docs/demo-guide.md` |
 
 ## Numbers that matter
 
@@ -45,7 +45,7 @@ CLI** helps with setup checks, failure triage, and draft test scaffolding —
 | `generated/**` | Scaffolded `.feature` drafts (ignored; keep `generated/.gitkeep` placeholders) |
 | `target/**` | Maven + Karate HTML/JSON (ignored) |
 
-## Boundaries you can state clearly
+## Architectural boundaries
 
 - **Layer A** — business rules and money paths; no Python import, no LLM.
 - **Layer B** — reads `target/`, `docs/`, optional logs; writes `reports/` and
@@ -68,7 +68,7 @@ Ubuntu, Java 17, Node 22, API via `node index.js`, `./mvnw test`, then
 API-only Compose decision for v1). Triggers on `main` and `master`; edit
 the workflow if your default branch uses another name.
 
-## If they ask “what would you do next?”
+## Possible next steps
 
 - Contract diff between OpenAPI snapshots on PR.
 - More `scaffold from-rule` templates (only two curated examples today).

@@ -1,5 +1,5 @@
 # Lightweight CI: start Layer A on localhost, run Karate + Python tooling tests.
-# No Karate-in-Docker — keeps the pipeline simple and matches interview flow.
+# No Karate-in-Docker — keeps the pipeline simple and matches host-run verify flow.
 
 name: CI
 
